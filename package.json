@@ -65,7 +65,7 @@
     "eslint-plugin-import": "^2.27.5",
     "eslint-plugin-markdown": "^2.2.1",
     "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^4.2.1",
+    "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-promise": "^6.0.0",
     "glob": "^9.0.2",
     "lockfile-lint": "^4.10.6",
