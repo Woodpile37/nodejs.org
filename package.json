@@ -39,7 +39,7 @@
     "jquery": "^3.7.0",
     "jquery.fancytable": "^1.0.34",
     "jstransformer-handlebars": "^1.2.0",
-    "junk": "^3.1.0",
+    "junk": "^4.0.1",
     "lodash.defaultsdeep": "^4.6.1",
     "marked": "^6.0.0",
     "metalsmith": "^2.6.1",
