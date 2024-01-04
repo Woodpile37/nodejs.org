@@ -1,21 +1,23 @@
 'use client';
-import { CloudArrowDownIcon } from '@heroicons/react/24/outline';
+import {
+  CloudArrowDownIcon,
+  ArrowUpRightIcon,
+} from '@heroicons/react/24/outline';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import type { FC } from 'react';
 
 import Button from '@/components/Common/Button';
 import Select from '@/components/Common/Select';
 import Tabs from '@/components/Common/Tabs';
-import Apple from '@/components/Icons/Platform/Apple';
-import GenericBlack from '@/components/Icons/Platform/GenericBlack';
-import GenericWhite from '@/components/Icons/Platform/GenericWhite';
-import Linux from '@/components/Icons/Platform/Linux';
-import Microsoft from '@/components/Icons/Platform/Microsoft';
+import OsSelect from '@/components/Downloads/OsSelect';
+import PlatformSelect from '@/components/Downloads/PlatformSelect';
 import { useClientContext, useDetectOS } from '@/hooks';
 import type { NodeRelease } from '@/types';
 import type { UserOS } from '@/types/userOS';
+import { downloadUrlByOS } from '@/util/downloadUrlByOS';
 
 import DefaultLayout from './Default';
 import styles from './layouts.module.css';
@@ -24,19 +26,36 @@ type _DownloadLayoutProps = {
   release: NodeRelease[];
 };
 
+type OsVariant = 'silicon' | 'intel' | 'x64' | 'x86';
+
 type UserSelection = {
   os: UserOS;
+  osVariant?: OsVariant;
   bitness: number;
   releaseData: NodeRelease;
+  packageManager?: 'nvm' | 'homebrew' | 'fvm';
 };
 
+const OsName = {
+  MAC: 'MacOS',
+  WIN: 'Windows',
+  LINUX: 'Linux',
+  OTHER: 'Other',
+};
+
+const MacosVariant = ['silicon', 'intel'];
+
+const WindowsVariant = ['x64', 'x86'];
+
 const DownloadLayout: FC<_DownloadLayoutProps> = ({ release }) => {
+  const router = useRouter();
   const { os, bitness } = useDetectOS();
   const { frontmatter } = useClientContext();
+  const LTS = release.find(release => release.isLts) ?? release[0];
   const [userSelection, setUserSelection] = useState<UserSelection>({
     os,
     bitness,
-    releaseData: release.find(release => release.isLts) ?? release[0],
+    releaseData: LTS,
   });
 
   useEffect(() => {
@@ -73,13 +92,19 @@ const DownloadLayout: FC<_DownloadLayoutProps> = ({ release }) => {
           ]}
           className="mt-6"
         >
-          <TabsPrimitive.Content value="prebuilt">
+          <TabsPrimitive.Content
+            value="prebuilt"
+            className="my-6 flex flex-col items-start justify-start gap-6"
+          >
             <p className="inline-flex items-center justify-center gap-[10px]">
               I want the{' '}
               <Select
                 inline
                 defaultValue={userSelection.releaseData.versionWithPrefix}
-                values={release.map(release => release.versionWithPrefix)}
+                values={release.map(release => ({
+                  value: release.versionWithPrefix,
+                  label: `${release.version}${release.isLts ? ' (LTS)' : ''}`,
+                }))}
                 onChange={v => {
                   setUserSelection({
                     ...userSelection,
@@ -90,64 +115,145 @@ const DownloadLayout: FC<_DownloadLayoutProps> = ({ release }) => {
                 }}
               />{' '}
               version of Node For{' '}
-              <Select
-                values={[
-                  {
-                    label: 'Platform',
-                    items: [
-                      {
-                        value: 'LINUX',
-                        label: 'Linux',
-                        iconImage: <Linux width={16} height={16} />,
-                      },
-                      {
-                        value: 'MAC',
-                        label: 'MacOS',
-                        iconImage: <Apple width={16} height={16} />,
-                      },
-                      {
-                        value: 'WIN',
-                        label: 'Windows',
-                        iconImage: <Microsoft width={16} height={16} />,
-                      },
-                      {
-                        value: 'OTHER',
-                        label: 'Other',
-                        iconImage: (
-                          <>
-                            <GenericBlack
-                              width={16}
-                              height={16}
-                              className="dark:hidden"
-                            />
-                            <GenericWhite
-                              width={16}
-                              height={16}
-                              className="hidden dark:block"
-                            />
-                          </>
-                        ),
-                      },
-                    ],
-                  },
-                ]}
-                defaultValue={userSelection.os}
-                inline
-                onChange={v => {
+              <OsSelect
+                onChange={v =>
                   setUserSelection({
                     ...userSelection,
                     os: v as UserOS,
-                  });
-                }}
-              ></Select>{' '}
-              running <Select inline></Select>
+                  })
+                }
+                defaultValues={userSelection.os}
+              />
+              {(userSelection.os === 'MAC' || userSelection.os === 'WIN') && (
+                <>
+                  running
+                  <Select
+                    inline
+                    defaultValue={
+                      userSelection.os === 'MAC' ? 'silicon' : 'x64'
+                    }
+                    values={
+                      userSelection.os === 'MAC'
+                        ? MacosVariant.map(v => ({ value: v, label: v }))
+                        : WindowsVariant.map(v => ({ value: v, label: v }))
+                    }
+                    onChange={v => {
+                      if (userSelection.os === 'MAC') {
+                        setUserSelection({
+                          ...userSelection,
+                          osVariant: v as OsVariant,
+                        });
+                      }
+                      if (userSelection.os === 'WIN') {
+                        console.log(v);
+                        setUserSelection({
+                          ...userSelection,
+                          bitness: v === 'x64' ? 64 : v === 'x86' ? 86 : 0,
+                        });
+                      }
+                    }}
+                  />
+                </>
+              )}
             </p>
+            <Button
+              className="flex items-center justify-center gap-2"
+              onClick={() => {
+                router.push(
+                  downloadUrlByOS(
+                    userSelection.releaseData.versionWithPrefix,
+                    userSelection.os,
+                    userSelection.bitness
+                  )
+                );
+              }}
+            >
+              <CloudArrowDownIcon className="size-5" />
+              Download{' '}
+              {LTS === userSelection.releaseData
+                ? 'lasted'
+                : userSelection.releaseData.versionWithPrefix}{' '}
+              Node.js for {OsName[userSelection.os]}
+            </Button>
           </TabsPrimitive.Content>
           <TabsPrimitive.Content value="package" className="my-6">
-            Package Manager
+            <p className="inline-flex items-center justify-center gap-[10px]">
+              Install Node version
+              <Select
+                inline
+                defaultValue={userSelection.releaseData.versionWithPrefix}
+                values={release.map(release => ({
+                  value: release.versionWithPrefix,
+                  label: `${release.version}${release.isLts ? ' (LTS)' : ''}`,
+                }))}
+                onChange={v => {
+                  setUserSelection({
+                    ...userSelection,
+                    releaseData: release.find(
+                      release => release.versionWithPrefix === v
+                    )!,
+                  });
+                }}
+              />
+              on
+              <OsSelect
+                onChange={v =>
+                  setUserSelection({
+                    ...userSelection,
+                    os: v as UserOS,
+                  })
+                }
+                defaultValues={userSelection.os}
+              />
+              Using
+              <PlatformSelect
+                onChange={v =>
+                  setUserSelection({
+                    ...userSelection,
+                    packageManager: v as 'nvm' | 'homebrew' | 'fvm',
+                  })
+                }
+                defaultValues={userSelection.packageManager ?? 'nvm'}
+              />
+            </p>
+            {/* CODE SNIPET */}
           </TabsPrimitive.Content>
-          <TabsPrimitive.Content value="source" className="my-6">
-            <Button className="flex items-center justify-center gap-2">
+          <TabsPrimitive.Content
+            value="source"
+            className="my-6 flex flex-col items-start justify-start gap-6"
+          >
+            <p className="inline-flex items-center justify-center gap-[10px]">
+              I want the
+              <Select
+                inline
+                defaultValue={userSelection.releaseData.versionWithPrefix}
+                values={release.map(release => ({
+                  value: release.versionWithPrefix,
+                  label: `${release.version}${release.isLts ? ' (LTS)' : ''}`,
+                }))}
+                onChange={v => {
+                  setUserSelection({
+                    ...userSelection,
+                    releaseData: release.find(
+                      release => release.versionWithPrefix === v
+                    )!,
+                  });
+                }}
+              />
+              version of the Node.js source code.
+            </p>
+            <Button
+              className="flex items-center justify-center gap-2"
+              onClick={() => {
+                router.push(
+                  downloadUrlByOS(
+                    userSelection.releaseData.versionWithPrefix,
+                    'OTHER',
+                    0
+                  )
+                );
+              }}
+            >
               <CloudArrowDownIcon className="size-5" />
               Download latest source code
             </Button>
@@ -163,6 +269,7 @@ const DownloadLayout: FC<_DownloadLayoutProps> = ({ release }) => {
             <Link href="https://github.com/nodejs/node#verifying-binaries">
               verify signed SHASUMS
             </Link>
+            <ArrowUpRightIcon className="m-1 inline size-4" />
           </p>
         </div>
       </main>
