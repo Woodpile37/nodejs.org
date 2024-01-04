@@ -64,3 +64,13 @@
       dark:bg-neutral-950;
   }
 }
+
+.downloadLayout {
+  @apply mx-auto
+    my-12
+    flex
+    h-full
+    w-1/2
+    flex-col
+    gap-6;
+}

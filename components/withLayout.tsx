@@ -1,5 +1,6 @@
 import type { FC, PropsWithChildren } from 'react';
 
+import WithNodeRelease from '@/components/withNodeRelease';
 import LegacyAboutLayout from '@/layouts/AboutLayout';
 import LegacyBlogCategoryLayout from '@/layouts/BlogCategoryLayout';
 import LegacyBlogPostLayout from '@/layouts/BlogPostLayout';
@@ -11,6 +12,7 @@ import LegacyLearnLayout from '@/layouts/LearnLayout';
 import AboutLayout from '@/layouts/New/About';
 import DefaultLayout from '@/layouts/New/Default';
 import DocsLayout from '@/layouts/New/Docs';
+import DownloadLayout from '@/layouts/New/Download';
 import LearnLayout from '@/layouts/New/Learn';
 import { ENABLE_WEBSITE_REDESIGN } from '@/next.constants.mjs';
 import type { LegacyLayouts } from '@/types';
@@ -35,7 +37,12 @@ const redesignLayouts = {
   'blog-category.hbs': DefaultLayout,
   'blog-post.hbs': DefaultLayout,
   'contribute.hbs': AboutLayout,
-  'download.hbs': DefaultLayout,
+  'download.hbs': () => (
+    // It's a way to pass server data to the client
+    <WithNodeRelease>
+      {({ release }) => <DownloadLayout release={release} />}
+    </WithNodeRelease>
+  ),
   'index.hbs': DefaultLayout,
   'learn.hbs': LearnLayout,
   'page.hbs': DefaultLayout,
