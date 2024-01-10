@@ -1,31 +1,34 @@
 import { LanguageIcon } from '@heroicons/react/24/outline';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import classNames from 'classnames';
+import { useTranslations } from 'next-intl';
 import type { FC } from 'react';
-import { useIntl } from 'react-intl';
 
-import { useLocale } from '@/hooks/useLocale';
+import type { LocaleConfig } from '@/types';
 
 import styles from './index.module.css';
 
-export type LanguageDropDownProps = {
-  onClick?: () => void;
+type SimpleLocaleConfig = Pick<LocaleConfig, 'name' | 'code'>;
+
+type LanguageDropDownProps = {
+  onChange?: (newLocale: SimpleLocaleConfig) => void;
+  currentLanguage: string;
+  availableLanguages: Array<SimpleLocaleConfig>;
 };
 
 const LanguageDropdown: FC<LanguageDropDownProps> = ({
-  onClick = () => {},
+  onChange = () => {},
+  currentLanguage,
+  availableLanguages,
 }) => {
-  const { availableLocales, currentLocale } = useLocale();
-  const intl = useIntl();
+  const t = useTranslations();
 
-  const ariaLabel = intl.formatMessage({
-    id: 'components.common.languageDropdown.label',
-  });
+  const ariaLabel = t('components.common.languageDropdown.label');
 
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
-        <button className={styles.iconWrapper} aria-label={ariaLabel}>
+        <button className={styles.languageDropdown} aria-label={ariaLabel}>
           <LanguageIcon height="20" />
         </button>
       </DropdownMenu.Trigger>
@@ -36,17 +39,19 @@ const LanguageDropdown: FC<LanguageDropDownProps> = ({
           className={styles.dropDownContent}
           sideOffset={5}
         >
-          {availableLocales.map(({ name, code }) => (
-            <DropdownMenu.Item
-              key={code}
-              onClick={onClick}
-              className={classNames(styles.dropDownItem, {
-                [styles.currentDropDown]: code === currentLocale.code,
-              })}
-            >
-              {name}
-            </DropdownMenu.Item>
-          ))}
+          <div>
+            {availableLanguages.map(({ name, code }) => (
+              <DropdownMenu.Item
+                key={code}
+                onClick={() => onChange({ name, code })}
+                className={classNames(styles.dropDownItem, {
+                  [styles.currentDropDown]: code === currentLanguage,
+                })}
+              >
+                {name}
+              </DropdownMenu.Item>
+            ))}
+          </div>
         </DropdownMenu.Content>
       </DropdownMenu.Portal>
     </DropdownMenu.Root>

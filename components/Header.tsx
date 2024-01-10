@@ -1,73 +1,58 @@
-import classNames from 'classnames';
+'use client';
+
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 import { useTheme } from 'next-themes';
-import { useIntl } from 'react-intl';
+import type { FC, PropsWithChildren } from 'react';
+import { useState } from 'react';
 
-import { useLocale } from '@/hooks/useLocale';
-import { useNavigation } from '@/hooks/useNavigation';
-import { useRouter } from '@/hooks/useRouter';
+import Link from '@/components/Link';
+import { useClientContext } from '@/hooks';
+import { BASE_PATH } from '@/next.constants.mjs';
+import { availableLocales } from '@/next.locales.mjs';
 
-import LocalizedLink from './LocalizedLink';
+const Header: FC<PropsWithChildren> = ({ children }) => {
+  const [showLangPicker, setShowLangPicker] = useState(false);
+  const { resolvedTheme, setTheme } = useTheme();
 
-const Header = () => {
-  const { availableLocales, isCurrentLocaleRoute } = useLocale();
-  const { navigationItems } = useNavigation();
-  const { formatMessage } = useIntl();
-  const { asPath, basePath } = useRouter();
-  const { theme, setTheme } = useTheme();
+  const { pathname } = useClientContext();
+  const t = useTranslations();
 
-  const getLinkClassName = (href: string) =>
-    classNames({ active: isCurrentLocaleRoute(href, href !== '/') });
-
-  const toggleLanguage = formatMessage({
-    id: 'components.header.buttons.toggleLanguage',
-  });
-
-  const toggleDarkMode = formatMessage({
-    id: 'components.header.buttons.toggleDarkMode',
-  });
-
-  const currentRouteLocalized = (locale: string) =>
-    asPath.replace(/^\/[a-zA-Z-]+/, `/${locale}`);
+  const toggleLanguage = t('components.header.buttons.toggleLanguage');
+  const toggleTheme = t('components.header.buttons.toggleTheme');
 
   return (
     <header aria-label="Primary">
       <div className="container">
-        <LocalizedLink href="/" className="logo">
+        <Link href="/" className="logo">
           <Image
             priority
             width="111"
             height="33"
-            src={`${basePath}/static/images/logo.svg`}
+            src={`${BASE_PATH}/static/images/logo.svg`}
             alt="Node.js"
           />
-        </LocalizedLink>
+        </Link>
 
-        <nav aria-label="primary">
-          <ul className="list-divider-pipe">
-            {navigationItems.map((item, key) => (
-              <li key={key} className={getLinkClassName(item.link)}>
-                <LocalizedLink href={item.link}>{item.text}</LocalizedLink>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        {children}
 
         <div className="switchers">
           <button
-            className="dark-theme-switcher"
+            className="theme-switcher"
             type="button"
-            title={toggleDarkMode}
-            aria-label={toggleDarkMode}
-            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            title={toggleTheme}
+            aria-label={toggleTheme}
+            onClick={() =>
+              setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')
+            }
           >
             <Image
               priority
               width="28"
               height="28"
               className="dark-image"
-              src={`${basePath}/static/images/light-mode.svg`}
-              alt="Dark Theme Switcher"
+              src={`${BASE_PATH}/static/images/light-mode.svg`}
+              alt="Theme Switcher"
             />
 
             <Image
@@ -75,8 +60,8 @@ const Header = () => {
               width="28"
               height="28"
               className="light-image"
-              src={`${basePath}/static/images/dark-mode.svg`}
-              alt="Dark Theme Switcher"
+              src={`${BASE_PATH}/static/images/dark-mode.svg`}
+              alt="Theme Switcher"
             />
           </button>
 
@@ -85,6 +70,7 @@ const Header = () => {
             type="button"
             title={toggleLanguage}
             aria-label={toggleLanguage}
+            onClick={() => setShowLangPicker(!showLangPicker)}
             aria-controls="lang-picker"
             aria-expanded="false"
           >
@@ -92,25 +78,28 @@ const Header = () => {
               priority
               width="25"
               height="28"
-              src={`${basePath}/static/images/language-picker.svg`}
+              src={`${BASE_PATH}/static/images/language-picker.svg`}
               alt="Language Switcher"
             />
           </button>
         </div>
 
-        <ul id="lang-picker" className="lang-picker hidden">
-          {availableLocales.map(locale => (
-            <li key={locale.code}>
-              <a
-                data-lang={locale.code}
-                title={locale.name}
-                href={currentRouteLocalized(locale.code)}
-              >
-                {locale.localName}
-              </a>
-            </li>
-          ))}
-        </ul>
+        {showLangPicker && (
+          <ul className="lang-picker">
+            {availableLocales.map(locale => (
+              <li key={locale.code}>
+                <Link
+                  title={locale.name}
+                  locale={locale.code}
+                  href={pathname}
+                  onClick={() => setShowLangPicker(false)}
+                >
+                  {locale.localName}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
     </header>
   );

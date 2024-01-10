@@ -1,71 +1,68 @@
 'use strict';
 
 /**
- * READ: Vercel's NFT is unable to by default understand that a dependent package (`shiki`) loads any of the files
- * mentioned within `BUNDLED_LANGUAGES` as they're loaded on-demand. We circumvent this issue by manually declaring these languages
- *
- * NOTE: Shiki attempts to load matching Languages from their `BUNDLED_LANGUAGES` by the built-in provided paths, even if we provide
- * languages with a custom `path`. This would cause issues with Vercel's NFT as it doesn't recognise the need of these files.
- *
- * This is easily fixable by using `require.resolve` on the languages below which makes Vercel NFT aware of these files.
- * Yet instead we adopted the `grammar` property approach instead of `path`, since if a `grammar` field is provided, it allows
- * Shiki to load the ones we provide instead of the ones from `BUNDLED_LANGUAGES`.
+ * READ: This file allows us to configure a subset of languages that we want to support on the Node.js Website
+ * we use `shikiji` which is an ESM-only rewrite of Shiki
  */
 
-import javaScriptLanguage from 'shiki/languages/javascript.tmLanguage.json' assert { type: 'json' };
-import jsonLanguage from 'shiki/languages/json.tmLanguage.json' assert { type: 'json' };
-import jsxLanguage from 'shiki/languages/jsx.tmLanguage.json' assert { type: 'json' };
-import shellScriptLanguage from 'shiki/languages/shellscript.tmLanguage.json' assert { type: 'json' };
-import shellSessionLanguage from 'shiki/languages/shellsession.tmLanguage.json' assert { type: 'json' };
-import typeScriptLanguage from 'shiki/languages/typescript.tmLanguage.json' assert { type: 'json' };
-import xmlLanguage from 'shiki/languages/xml.tmLanguage.json' assert { type: 'json' };
-import yamlLanguage from 'shiki/languages/yaml.tmLanguage.json' assert { type: 'json' };
+import diffLanguage from 'shikiji/langs/diff.mjs';
+import dockerLanguage from 'shikiji/langs/docker.mjs';
+import javaScriptLanguage from 'shikiji/langs/javascript.mjs';
+import jsonLanguage from 'shikiji/langs/json.mjs';
+import shellScriptLanguage from 'shikiji/langs/shellscript.mjs';
+import shellSessionLanguage from 'shikiji/langs/shellsession.mjs';
+import typeScriptLanguage from 'shikiji/langs/typescript.mjs';
+import shikiNordTheme from 'shikiji/themes/nord.mjs';
 
-/** @type {import('shiki').ILanguageRegistration[]} */
-export const SUPPORTED_LANGUAGES = [
+/** @type {import('shikiji').LanguageRegistration[]} */
+export const LANGUAGES = [
   {
-    id: 'javascript',
+    ...javaScriptLanguage[0],
     scopeName: 'source.js',
-    grammar: javaScriptLanguage,
-    aliases: ['js'],
+    aliases: ['mjs', 'cjs', 'js'],
+    displayName: 'JavaScript',
   },
   {
-    id: 'json',
+    ...jsonLanguage[0],
     scopeName: 'source.json',
-    grammar: jsonLanguage,
+    displayName: 'JSON',
   },
   {
-    id: 'jsx',
-    scopeName: 'source.js.jsx',
-    grammar: jsxLanguage,
-  },
-  {
-    id: 'typescript',
+    ...typeScriptLanguage[0],
     scopeName: 'source.ts',
-    grammar: typeScriptLanguage,
     aliases: ['ts'],
+    displayName: 'TypeScript',
   },
   {
-    id: 'xml',
-    scopeName: 'text.xml',
-    grammar: xmlLanguage,
-  },
-  {
-    id: 'yaml',
-    scopeName: 'source.yaml',
-    grammar: yamlLanguage,
-    aliases: ['yml'],
-  },
-  {
-    id: 'shellscript',
+    ...shellScriptLanguage[0],
     scopeName: 'source.shell',
-    grammar: shellScriptLanguage,
     aliases: ['bash', 'sh', 'shell', 'zsh'],
+    displayName: 'Bash',
   },
   {
-    id: 'shellsession',
+    ...shellSessionLanguage[0],
     scopeName: 'text.shell-session',
-    grammar: shellSessionLanguage,
     aliases: ['console'],
+    displayName: 'Bash',
+  },
+  {
+    ...dockerLanguage[0],
+    scopeName: 'source.dockerfile',
+    aliases: ['dockerfile'],
+    displayName: 'Dockerfile',
+  },
+  {
+    ...diffLanguage[0],
+    scopeName: 'source.diff',
+    displayName: 'Diff',
   },
 ];
+
+// This is the default theme we use for our Shiki Syntax Highlighter
+export const DEFAULT_THEME = {
+  // We updating this color because the background color and comment text color
+  // in the Codebox component do not comply with accessibility standards
+  // @see https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html
+  colorReplacements: { '#616e88': '#707e99' },
+  ...shikiNordTheme,
+};

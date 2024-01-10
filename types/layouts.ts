@@ -1,13 +1,18 @@
+// @TODO: These are the Website Redesign Layouts
+export type Layouts =
+  | 'about.hbs'
+  | 'docs.hbs'
+  | 'home.hbs'
+  | 'learn.hbs'
+  | 'page.hbs';
+
 // @TODO: These are legacy layouts that are going to be replaced with the `nodejs/nodejs.dev` Layouts in the future
 export type LegacyLayouts =
   | 'about.hbs'
-  | 'blog-index.hbs'
+  | 'learn.hbs'
+  | 'blog-category.hbs'
   | 'blog-post.hbs'
-  | 'category-index.hbs'
-  | 'contribute.hbs'
   | 'index.hbs'
   | 'docs.hbs'
   | 'download.hbs'
-  | 'download-current.hbs'
-  | 'download-releases.hbs'
   | 'page.hbs';

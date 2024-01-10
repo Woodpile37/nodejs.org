@@ -1,7 +1,16 @@
 'use strict';
 
-import { blogData } from './next.json.mjs';
-import { defaultLocale } from './next.locales.mjs';
+/**
+ * This is used for the current Legacy Website Blog Pagination Generation
+ *
+ * @deperecated remove with website redesign
+ */
+export const CURRENT_YEAR = new Date().getFullYear();
+
+/**
+ * This is used to verify if the current Website is running on a Development Environment
+ */
+export const IS_DEVELOPMENT = process.env.NODE_ENV === 'development';
 
 /**
  * This is used for telling Next.js if the Website is deployed on Vercel
@@ -13,6 +22,16 @@ import { defaultLocale } from './next.locales.mjs';
 export const VERCEL_ENV = process.env.NEXT_PUBLIC_VERCEL_ENV || undefined;
 
 /**
+ * This is used for defining a default time of when `next-data` and other dynamically generated
+ * but static-enabled pages should be regenerated.
+ *
+ * Note that this is a custom Environment Variable that can be defined by us when necessary
+ */
+export const VERCEL_REVALIDATE = Number(
+  process.env.NEXT_PUBLIC_VERCEL_REVALIDATE_TIME || 300
+);
+
+/**
  * This is used for telling Next.js to to a Static Export Build of the Website
  *
  * This is used for static/without a Node.js server hosting, such as on our
@@ -21,8 +40,17 @@ export const VERCEL_ENV = process.env.NEXT_PUBLIC_VERCEL_ENV || undefined;
  * Note that this is a manual Environment Variable defined by us during `npm run deploy`
  */
 export const ENABLE_STATIC_EXPORT =
-  process.env.NEXT_STATIC_EXPORT === 'true' ||
-  process.env.NEXT_STATIC_EXPORT === true;
+  process.env.NEXT_PUBLIC_STATIC_EXPORT === 'true' ||
+  process.env.NEXT_PUBLIC_STATIC_EXPORT === true;
+
+/**
+ * This is used for enabling the New Website Redesign Layouts
+ *
+ * Note that this is a manual Environment Variable defined by us if necessary.
+ */
+export const ENABLE_WEBSITE_REDESIGN =
+  process.env.NEXT_PUBLIC_ENABLE_REDESIGN === 'true' ||
+  process.env.NEXT_PUBLIC_ENABLE_REDESIGN === true;
 
 /**
  * This is used for any place that requires the full canonical URL path for the Node.js Website (and its deployment), such as for example, the Node.js RSS Feed.
@@ -35,13 +63,13 @@ export const ENABLE_STATIC_EXPORT =
 export const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL
   ? process.env.NEXT_PUBLIC_BASE_URL
   : process.env.NEXT_PUBLIC_VERCEL_URL
-  ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
-  : 'https://nodejs.org';
+    ? `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+    : 'https://nodejs.org';
 
 /**
  * This is used for any place that requires the Node.js distribution URL (which by default is nodejs.org/dist)
  *
- * Note that this is a manual Environment Variable defined by us if necessary.
+ * Note that this is a custom Environment Variable that can be defined by us when necessary
  */
 export const DIST_URL =
   process.env.NEXT_PUBLIC_DIST_URL || 'https://nodejs.org/dist/';
@@ -49,7 +77,7 @@ export const DIST_URL =
 /**
  * This is used for any place that requires the Node.js API Docs URL (which by default is nodejs.org/docs)
  *
- * Note that this is a manual Environment Variable defined by us if necessary.
+ * Note that this is a custom Environment Variable that can be defined by us when necessary
  */
 export const DOCS_URL =
   process.env.NEXT_PUBLIC_DOCS_URL || 'https://nodejs.org/docs/';
@@ -60,9 +88,23 @@ export const DOCS_URL =
  * This is useful when running the deployment on a subdirectory
  * of a domain, such as when hosted on GitHub Pages.
  *
- * Note that this is a manual Environment Variable defined by us if necessary.
+ * Note that this is a custom Environment Variable that can be defined by us when necessary
  */
 export const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || '';
+
+/**
+ * This is used for fetching static next-data through the /en/next-data/ endpoint
+ *
+ * Note this is assumes that the Node.js Website is either running within Vercel Environment
+ * or running locally (either production or development) mode
+ *
+ * Note this variable can be overrided via a manual Environment Variable defined by us if necessary.
+ */
+export const NEXT_DATA_URL = process.env.NEXT_PUBLIC_DATA_URL
+  ? process.env.NEXT_PUBLIC_DATA_URL
+  : VERCEL_ENV
+    ? `${BASE_URL}${BASE_PATH}/en/next-data/`
+    : `http://localhost:3000/en/next-data/`;
 
 /**
  * This ReGeX is used to remove the `index.md(x)` suffix of a name and to remove
@@ -72,73 +114,6 @@ export const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH || '';
  * Route Segments for Next.js Dynamic Routes on `pages/[...path].tsx`
  */
 export const MD_EXTENSION_REGEX = /((\/)?(index))?\.mdx?$/i;
-
-/**
- * This is a shorthand to the Default Locale if you're only interested
- * on the Locale Code.
- *
- * This should only be used outside of the Next.js Application itself
- * as within React context the `useLocale` hook should be used instead.
- */
-export const DEFAULT_LOCALE_CODE = defaultLocale.code;
-
-/**
- * This indicates the path to the Legacy JavaScript File that is used
- * on the legacy Website.
- *
- * @deprecated The Legacy Website is due to be removed soon and this file
- * and its usages should be removed
- */
-export const LEGACY_JAVASCRIPT_FILE = `${BASE_PATH}/static/js/legacyMain.js`;
-
-/**
- * This is a list of all static routes or pages from the Website that we do not
- * want to allow to be statically built on our Static Export Build.
- *
- * @type {((route: import('./types').RouteSegment) => boolean)[]} A list of Ignored Routes by Regular Expressions
- */
-export const STATIC_ROUTES_IGNORES = [
-  // This is used to ignore is used to ignore all blog routes except for the English language
-  route => !route.localised && /^blog\//.test(route.pathname),
-  // This is used to ignore the blog/pagination meta route
-  route => /^blog\/pagination/.test(route.pathname),
-];
-
-/**
- * This is a list of all dynamic routes or pages from the Website that we do not
- * want to allow to be dynamically access by our Dynamic Route Engine
- *
- * @type {RegExp[]} A list of Ignored Routes by Regular Expressions
- */
-export const DYNAMIC_ROUTES_IGNORES = [
-  // This is used to ignore the blog/pagination route
-  /^blog\/pagination/,
-];
-
-/**
- * This is a list of all static routes that we want to rewrite their pathnames
- * into something else. This is useful when you want to have the current pathname in the route
- * but replace the actual Markdown file that is being loaded by the Dynamic Route to something else
- *
- * @type {[RegexExp, (pathname: string) => string][]}
- */
-export const DYNAMIC_ROUTES_REWRITES = [
-  [/^blog\/year-/, () => 'blog/pagination'],
-];
-
-/**
- * This is a constant that should be used during runtime by (`getStaticPaths`) on `pages/[...path].tsx`
- *
- * This function is used to provide an extra set of routes that are not provided by `next.dynamic.mjs`
- * static route discovery. This can happen when we have dynamic routes that **must** be provided
- * within the static export (static build) of the website. This constant usually would be used along
- * with a matching pathname on `DYNAMIC_ROUTES_REWRITES`.
- *
- * @returns {string[]} A list of all the Dynamic Routes that are generated by the Website
- */
-export const DYNAMIC_GENERATED_ROUTES = () => [
-  ...blogData.pagination.map(year => `en/blog/year-${year}`),
-];
 
 /***
  * This is a list of all external links that are used on website sitemap.
@@ -156,5 +131,51 @@ export const EXTERNAL_LINKS_SITEMAP = [
 
 /**
  * The `localStorage` key to store the theme choice of `next-themes`
+ *
+ * This is what allows us to store user preference for theming
  */
-export const THEME_LOCAL_STORAGE_KEY = 'theme';
+export const THEME_STORAGE_KEY = 'theme';
+
+/**
+ * This is the Sentry DSN for the Node.js Website Project
+ */
+export const SENTRY_DSN =
+  'https://02884d0745aecaadf5f780278fe5fe70@o4506191161786368.ingest.sentry.io/4506191307735040';
+
+/**
+ * This states if Sentry should be enabled and bundled within our App
+ *
+ * We enable sentry by default if we're om development mode or deployed
+ * on Vercel (either production or preview branches)
+ */
+export const SENTRY_ENABLE = IS_DEVELOPMENT || !!VERCEL_ENV;
+
+/**
+ * This configures the sampling rate for Sentry
+ *
+ * We always want to capture 100% on Vercel Preview Branches
+ * and not when it's on Production Mode (nodejs.org)
+ */
+export const SENTRY_CAPTURE_RATE =
+  SENTRY_ENABLE && VERCEL_ENV && BASE_URL !== 'https://nodejs.org' ? 1.0 : 0.01;
+
+/**
+ * Provides the Route for Sentry's Server-Side Tunnel
+ *
+ * This is a `@sentry/nextjs` specific feature
+ */
+export const SENTRY_TUNNEL = (components = '') =>
+  SENTRY_ENABLE ? `/monitoring${components}` : undefined;
+
+/**
+ * This configures which Sentry features to tree-shake/remove from the Sentry bundle
+ *
+ * @see https://docs.sentry.io/platforms/javascript/guides/nextjs/configuration/tree-shaking/
+ */
+export const SENTRY_EXTENSIONS = {
+  __SENTRY_DEBUG__: false,
+  __SENTRY_TRACING__: false,
+  __RRWEB_EXCLUDE_IFRAME__: true,
+  __RRWEB_EXCLUDE_SHADOW_DOM__: true,
+  __SENTRY_EXCLUDE_REPLAY_WORKER__: true,
+};

@@ -14,7 +14,7 @@ export default {
       green: {
         100: '#EDF2EB',
         200: '#C5E5B4',
-        300: '#C5E5B4',
+        300: '#99CC7D',
         400: '#84BA64',
         500: '#5FA04E',
         600: '#417E38',
@@ -91,6 +91,7 @@ export default {
       },
       white: '#FFFFFF',
       transparent: 'transparent',
+      shadow: '#101828',
     },
     fontSize: {
       xs: ['0.75rem', '1rem'],
@@ -116,20 +117,29 @@ export default {
       'ibm-plex-mono': ['var(--font-ibm-plex-mono)'],
     },
     extend: {
+      screens: { xs: { max: '670px' } },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'gradient-subtle':
+          'linear-gradient(180deg, theme(colors.neutral.100 / 50%) 0%, theme(colors.neutral.100 / 0%) 48.32%)',
+        'gradient-subtle-dark':
+          'linear-gradient(180deg, theme(colors.neutral.900 / 50%) 0%, theme(colors.neutral.900 / 0%) 48.32%)',
+        'gradient-subtle-gray':
+          'linear-gradient(180deg, theme(colors.neutral.900) 0%, theme(colors.neutral.900 / 80%) 100%)',
+        'gradient-subtle-white':
+          'linear-gradient(180deg, theme(colors.white) 0%, theme(colors.white / 80%) 100%)',
+        'gradient-glow-backdrop':
+          'radial-gradient(8em circle at calc(100% - 40px) 10px, theme(colors.green.500), transparent 30%)',
       },
       boxShadow: {
-        xs: '0px 1px 2px 0px rgba(16, 24, 40, 0.05)',
-        lg: '0px 4px 6px -2px rgba(16, 24, 40, 0.03), 0px 12px 16px -4px rgba(16, 24, 40, 0.08)',
+        xs: '0px 1px 2px 0px theme(colors.shadow / 5%)',
+        lg: '0px 4px 6px -2px theme(colors.shadow / 3%), 0px 12px 16px -4px theme(colors.shadow / 8%)',
       },
-      spacing: {
-        '4.5': '1.125rem',
-      },
-      aria: {
-        current: 'current="page"',
-      },
+      spacing: { '4.5': '1.125rem', '18': '4.5rem' },
+      aria: { current: 'current="page"' },
+      maxWidth: { '8xl': '95rem' },
     },
   },
   darkMode: ['class', '[data-theme="dark"]'],
+  plugins: [require('@savvywombat/tailwindcss-grid-areas')],
 } satisfies Config;

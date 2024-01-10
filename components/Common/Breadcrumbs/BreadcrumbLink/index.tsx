@@ -1,24 +1,24 @@
 import classNames from 'classnames';
 import type { ComponentProps, FC } from 'react';
 
-import LocalizedLink from '@/components/LocalizedLink';
+import Link from '@/components/Link';
 
 import styles from './index.module.css';
 
 type BreadcrumbLinkProps = {
   active?: boolean;
-} & ComponentProps<typeof LocalizedLink>;
+} & ComponentProps<typeof Link>;
 
 const BreadcrumbLink: FC<BreadcrumbLinkProps> = ({
   href,
   active,
   ...props
 }) => (
-  <LocalizedLink
+  <Link
     itemScope
     itemType="http://schema.org/Thing"
     itemProp="item"
-    itemID={href.toString()}
+    itemID={href?.toString()}
     href={href}
     className={classNames(
       styles.link,
@@ -29,7 +29,7 @@ const BreadcrumbLink: FC<BreadcrumbLinkProps> = ({
     {...props}
   >
     <span itemProp="name">{props.children}</span>
-  </LocalizedLink>
+  </Link>
 );
 
 export default BreadcrumbLink;

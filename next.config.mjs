@@ -1,6 +1,19 @@
 'use strict';
 
-import { BASE_PATH, ENABLE_STATIC_EXPORT } from './next.constants.mjs';
+import { resolve } from 'node:path';
+
+import { withSentryConfig } from '@sentry/nextjs';
+import withNextIntl from 'next-intl/plugin';
+
+import {
+  BASE_PATH,
+  ENABLE_STATIC_EXPORT,
+  ENABLE_WEBSITE_REDESIGN,
+  SENTRY_DSN,
+  SENTRY_ENABLE,
+  SENTRY_EXTENSIONS,
+  SENTRY_TUNNEL,
+} from './next.constants.mjs';
 import { redirects, rewrites } from './next.rewrites.mjs';
 
 /** @type {import('next').NextConfig} */
@@ -13,6 +26,8 @@ const nextConfig = {
   swcMinify: true,
   // We don't use trailing slashes on URLs from the Node.js Website
   trailingSlash: false,
+  // We don't want to redirect with trailing slashes
+  skipTrailingSlashRedirect: true,
   // We allow the BASE_PATH to be overridden in case that the Website
   // is being built on a subdirectory (e.g. /nodejs-website)
   basePath: BASE_PATH,
@@ -34,7 +49,45 @@ const nextConfig = {
   // as we already check it on the CI within each Pull Request
   // we also configure ESLint to run its lint checking on all files (next lint)
   eslint: { dirs: ['.'], ignoreDuringBuilds: true },
+  // Adds custom WebPack configuration to our Next.hs setup
+  webpack: function (config, { webpack }) {
+    // Next.js WebPack Bundler does not know how to handle `.mjs` files on `node_modules`
+    // This is not an issue when using TurboPack as it uses SWC and it is ESM-only
+    // Once Next.js uses Turbopack for their build process we can remove this
+    config.module.rules.push({
+      test: /\.m?js$/,
+      type: 'javascript/auto',
+      resolve: { fullySpecified: false },
+    });
+
+    // Tree-shakes modules from Sentry Bundle
+    config.plugins.push(new webpack.DefinePlugin(SENTRY_EXTENSIONS));
+
+    // This allows us to customise our global styles on build-tim,e
+    // based on if we're running the Website Redesign or not
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      // @deprecated remove when website redesign is done
+      globalStyles$: resolve(
+        ENABLE_WEBSITE_REDESIGN
+          ? './styles/new/index.css'
+          : './styles/old/index.css'
+      ),
+    };
+
+    return config;
+  },
   experimental: {
+    turbo: {
+      resolveAlias: {
+        // This allows us to customise our global styles on build-tim,e
+        // based on if we're running the Website Redesign or not
+        // @deprecated remove when website redesign is done
+        globalStyles: ENABLE_WEBSITE_REDESIGN
+          ? './styles/new/index.css'
+          : './styles/old/index.css',
+      },
+    },
     // Some of our static pages from `getStaticProps` have a lot of data
     // since we pass the fully-compiled MDX page from `MDXRemote` through
     // a page's static props.
@@ -47,7 +100,50 @@ const nextConfig = {
       '@radix-ui/react-toast',
       'tailwindcss',
     ],
+    // Removes the warning regarding the WebPack Build Worker
+    webpackBuildWorker: false,
   },
 };
 
-export default nextConfig;
+/** @type {import('@sentry/cli').SentryCliOptions} */
+const sentrySettings = {
+  // We don't want Sentry to emit logs
+  silent: true,
+  // Define the Sentry Organisation
+  org: 'nodejs-org',
+  // Define the Sentry Project on our Sentry Organisation
+  project: 'nodejs-org',
+  // Sentry DSN for the Node.js Website
+  dsn: SENTRY_DSN,
+};
+
+/** @type {import('@sentry/nextjs/types/config/types').UserSentryOptions} */
+const sentryConfig = {
+  // Upload Next.js or third-party code in addition to our code
+  widenClientFileUpload: true,
+  // Attempt to circumvent ad blockers
+  tunnelRoute: SENTRY_TUNNEL(),
+  // Prevent source map comments in built files
+  hideSourceMaps: false,
+  // Tree shake Sentry stuff from the bundle
+  disableLogger: true,
+  // Applies same WebPack Transpilation as Next.js
+  transpileClientSDK: true,
+};
+
+// Next.js Configuration with `next.intl` enabled
+const nextWithIntl = withNextIntl('./i18n.tsx')(nextConfig);
+
+// Next.js Configuration with `sentry` enabled
+const nextWithSentry = withSentryConfig(
+  // Next.js Config with i18n Configuration
+  nextWithIntl,
+  // Default Sentry Settings
+  sentrySettings,
+  // Default Sentry Extension Configuration
+  sentryConfig
+);
+
+// Decides wheter enabling Sentry or not
+// By default we only want to enable Sentry within a Vercel Environment
+export default SENTRY_ENABLE ? nextWithSentry : nextWithIntl;

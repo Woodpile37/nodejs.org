@@ -1,9 +1,7 @@
 ---
-title: Node.js 21 is now available!
-date: 2023-10-17T15:45:00.000Z
-status: publish
+date: '2023-10-17T15:45:00.000Z'
 category: announcements
-slug: nodejs-21-release-announcement
+title: 'Node.js 21 is now available!'
 layout: blog-post.hbs
 author: The Node.js Project
 ---
@@ -21,7 +19,7 @@ work since the last major release. This blog post will add some additional conte
 
 You can read more about our release policy at <https://github.com/nodejs/release>.
 
-To download Node.js 21.0.0, visit: <https://nodejs.org/en/download/current/>. You can find the release post at <https://nodejs.org/en/blog/release/v21.0.0>,
+To download Node.js 21.0.0, visit: [https://nodejs.org/download/current/](/download/current/). You can find the release post at [https://nodejs.org/blog/release/v21.0.0](/blog/release/v21.0.0),
 which contains the full list of commits included in this release.
 
 ## Notable Changes
@@ -132,28 +130,32 @@ res.uncork();
 
 Resulting in a response stream:
 
-    HTTP/1.1 200 OK
-    Content-Type: text/plain
-    Transfer-Encoding: chunked
+```
+HTTP/1.1 200 OK
+Content-Type: text/plain
+Transfer-Encoding: chunked
 
-    7\r\n
-    Mozilla\r\n
-    18\r\n
-     Developer Network\r\n
-    0\r\n
-    \r\n
+7\r\n
+Mozilla\r\n
+18\r\n
+Developer Network\r\n
+0\r\n
+\r\n
+```
 
 After this PR everything is combined into a single chunk when uncorking the response bypassing a
 lot of unnecessary overhead.
 
-    HTTP/1.1 200 OK
-    Content-Type: text/plain
-    Transfer-Encoding: chunked
+```
+HTTP/1.1 200 OK
+Content-Type: text/plain
+Transfer-Encoding: chunked
 
-    25\r\n
-    Mozilla Developer Network\r\n
-    0\r\n
-    \r\n
+25\r\n
+Mozilla Developer Network\r\n
+0\r\n
+\r\n
+```
 
 Contributed by Robert Nagy in [#50167](https://github.com/nodejs/node/pull/50167).
 

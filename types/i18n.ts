@@ -1,3 +1,5 @@
+import type { JSXElementConstructor, ReactElement, ReactNode } from 'react';
+
 export interface LocaleConfig {
   code: string;
   localName: string;
@@ -8,9 +10,7 @@ export interface LocaleConfig {
   enabled: boolean;
 }
 
-export interface LocaleContext {
-  localeMessages: Record<string, string>;
-  availableLocales: LocaleConfig[];
-  currentLocale: LocaleConfig;
-  defaultLocale: LocaleConfig;
-}
+export type FormattedMessage =
+  | string
+  | ReactElement<HTMLElement, string | JSXElementConstructor<HTMLElement>>
+  | ReadonlyArray<ReactNode>;

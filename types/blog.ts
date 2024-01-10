@@ -7,7 +7,19 @@ export interface BlogPost {
 }
 
 export interface BlogData {
-  posts: BlogPost[];
-  pagination: number[];
-  categories: string[];
+  posts: Array<BlogPost>;
+  pagination: Array<number>;
+  categories: Array<string>;
+}
+
+export interface BlogDataRSC {
+  posts: Array<BlogPost>;
+  pagination: {
+    next: number | null;
+    prev: number | null;
+  };
+  meta: {
+    categories: Array<string>;
+    pagination: Array<number>;
+  };
 }

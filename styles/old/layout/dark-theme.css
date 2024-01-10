@@ -2,7 +2,7 @@ html[data-theme='dark'] {
   background-color: $dark-black;
   color: $white;
 
-  .dark-theme-switcher {
+  .theme-switcher {
     img.light-image {
       display: none;
     }
@@ -30,16 +30,17 @@ html[data-theme='dark'] {
       &:hover {
         color: $white;
       }
-    }
 
-    .active > a {
-      background-color: $active-green;
-      color: $white;
+      &.active,
+      &.active:hover {
+        background-color: $active-green;
+        color: $white;
+      }
     }
   }
 
   header,
-  .dark-theme-switcher img,
+  .theme-switcher img,
   .lang-picker-toggler img {
     background-color: $dark-black2;
   }

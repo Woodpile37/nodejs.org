@@ -15,9 +15,7 @@ type NotificationContextType = {
   duration: number;
 } | null;
 
-type NotificationProps = {
-  viewportClassName?: string;
-};
+type NotificationProps = { viewportClassName?: string };
 
 const NotificationContext = createContext<NotificationContextType>(null);
 
@@ -44,6 +42,7 @@ export const NotificationProvider: FC<PropsWithChildren<NotificationProps>> = ({
           {children}
 
           <Toast.Viewport className={viewportClassName} />
+
           {notification && (
             <Notification duration={notification.duration}>
               {notification.message}

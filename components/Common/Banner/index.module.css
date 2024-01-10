@@ -17,12 +17,14 @@
 
   a {
     @apply w-fit
-      underline;
+      underline
+      decoration-white/50;
   }
 
   svg {
     @apply h-4
-      w-4;
+      w-4
+      text-white/50;
   }
 }
 

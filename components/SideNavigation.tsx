@@ -1,38 +1,36 @@
-import classNames from 'classnames';
+import type { RichTranslationValues } from 'next-intl';
 import type { FC } from 'react';
 
-import { useLocale } from '@/hooks/useLocale';
-import { useNavigation } from '@/hooks/useNavigation';
+import ActiveLink from '@/components/Common/ActiveLink';
+import { useSiteNavigation } from '@/hooks/server';
 import type { NavigationKeys } from '@/types';
 
-import LocalizedLink from './LocalizedLink';
-
 type SideNavigationProps = {
-  navigationKey: NavigationKeys;
-  context?: Record<string, Record<string, string | JSX.Element | undefined>>;
+  navigationKeys: Array<NavigationKeys>;
+  context?: Record<string, RichTranslationValues>;
 };
 
 const SideNavigation: FC<SideNavigationProps> = ({
-  navigationKey,
+  navigationKeys,
   context,
 }) => {
-  const { getSideNavigation } = useNavigation();
-  const { isCurrentLocaleRoute } = useLocale();
+  const { getSideNavigation } = useSiteNavigation();
 
-  const sideNavigationItems = getSideNavigation(navigationKey, context);
+  const sideNavigation = getSideNavigation(navigationKeys, context);
 
-  const getLinkClassName = (href: string) =>
-    classNames({ active: isCurrentLocaleRoute(href) });
+  const mapItems = (items: ReturnType<typeof getSideNavigation>) => {
+    return items.map(([, { link, label, items }]) => (
+      <li key={`${link}-${label}`}>
+        {link ? <ActiveLink href={link}>{label}</ActiveLink> : label}
+
+        {items && items.length > 0 && <ul>{mapItems(items)}</ul>}
+      </li>
+    ));
+  };
 
   return (
     <nav aria-label="secondary">
-      <ul>
-        {sideNavigationItems.map((item, key) => (
-          <li key={key} className={getLinkClassName(item.link)}>
-            <LocalizedLink href={item.link}>{item.text}</LocalizedLink>
-          </li>
-        ))}
-      </ul>
+      <ul>{mapItems(sideNavigation)}</ul>
     </nav>
   );
 };

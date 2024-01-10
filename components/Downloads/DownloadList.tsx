@@ -1,14 +1,16 @@
+import { useTranslations } from 'next-intl';
 import type { FC } from 'react';
-import { FormattedMessage } from 'react-intl';
 
-import LocalizedLink from '@/components/LocalizedLink';
-import { useNavigation } from '@/hooks/useNavigation';
+import Link from '@/components/Link';
+import { useSiteNavigation } from '@/hooks/server';
 import type { NodeRelease } from '@/types';
 
 const DownloadList: FC<NodeRelease> = ({ versionWithPrefix }) => {
-  const { getSideNavigation } = useNavigation();
+  const t = useTranslations();
 
-  const [, ...downloadNavigation] = getSideNavigation('download', {
+  const { getSideNavigation } = useSiteNavigation();
+
+  const [[, downloadNavigationItems]] = getSideNavigation(['download'], {
     shaSums: { nodeVersion: versionWithPrefix },
     allDownloads: { nodeVersion: versionWithPrefix },
   });
@@ -16,12 +18,12 @@ const DownloadList: FC<NodeRelease> = ({ versionWithPrefix }) => {
   return (
     <section>
       <ul>
-        {downloadNavigation.map((item, key) => (
+        {downloadNavigationItems.items.map(([key, { label, link }]) => (
           <li key={key}>
-            <LocalizedLink href={item.link}>{item.text}</LocalizedLink>
-            {item.key === 'shaSums' && (
+            <Link href={link}>{label}</Link>
+            {key === 'shaSums' && (
               <a href="https://github.com/nodejs/node#verifying-binaries">
-                <FormattedMessage id="components.downloadList.links.shaSums.howToVerify" />
+                {t('components.downloadList.links.shaSums.howToVerify')}
               </a>
             )}
           </li>

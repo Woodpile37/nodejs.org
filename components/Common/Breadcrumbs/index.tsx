@@ -1,19 +1,19 @@
-import { type LinkProps } from 'next/link';
 import { useMemo, type FC } from 'react';
 
-import BreadcrumbHomeLink from './BreadcrumbHomeLink';
-import BreadcrumbItem from './BreadcrumbItem';
-import BreadcrumbLink from './BreadcrumbLink';
-import BreadcrumbRoot from './BreadcrumbRoot';
-import BreadcrumbTruncatedItem from './BreadcrumbTruncatedItem';
+import BreadcrumbHomeLink from '@/components/Common/Breadcrumbs/BreadcrumbHomeLink';
+import BreadcrumbItem from '@/components/Common/Breadcrumbs/BreadcrumbItem';
+import BreadcrumbLink from '@/components/Common/Breadcrumbs/BreadcrumbLink';
+import BreadcrumbRoot from '@/components/Common/Breadcrumbs/BreadcrumbRoot';
+import BreadcrumbTruncatedItem from '@/components/Common/Breadcrumbs/BreadcrumbTruncatedItem';
+import type { FormattedMessage } from '@/types';
 
 type BreadcrumbLink = {
-  label: string;
-  href: LinkProps['href'];
+  label: FormattedMessage;
+  href: string | undefined;
 };
 
 type BreadcrumbsProps = {
-  links: BreadcrumbLink[];
+  links: Array<BreadcrumbLink>;
   maxLength?: number;
   hideHome?: boolean;
 };
@@ -38,7 +38,7 @@ const Breadcrumbs: FC<BreadcrumbsProps> = ({
 
         return (
           <BreadcrumbItem
-            key={link.href.toString()}
+            key={link.label.toString()}
             hidden={hidden}
             hideSeparator={isLastItem}
             position={position + +!hideHome}

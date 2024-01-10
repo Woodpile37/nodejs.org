@@ -1,6 +1,9 @@
 import type { Meta as MetaObj, StoryObj } from '@storybook/react';
 
-import Select from './index';
+import Select from '@/components/Common/Select';
+import Apple from '@/components/Icons/Platform/Apple';
+import Linux from '@/components/Icons/Platform/Linux';
+import Microsoft from '@/components/Icons/Platform/Microsoft';
 
 type Story = StoryObj<typeof Select>;
 type Meta = MetaObj<typeof Select>;
@@ -24,41 +27,45 @@ export const DropdownLabel: Story = {
   args: {
     values: [
       {
-        value: 'section-1',
         label: 'Getting Started',
-      },
-      {
-        value: 'section-2',
-        label: 'How to install Node.js',
-      },
-      {
-        value: 'section-3',
-        label: 'How much JavaScript do you need to know to use Node.js?',
-      },
-      {
-        value: 'section-4',
-        label: 'Differences between Node.js and the Browser',
-      },
-      {
-        value: 'section-5',
-        label: 'The V8 JavaScript Engine',
-      },
-      {
-        value: 'section-6',
-        label: 'An introduction to the NPM package manager',
-      },
-      {
-        value: 'section-7',
-        label: 'ECMAScript 2015 (ES6) and beyond',
-      },
-      {
-        value: 'section-8',
-        label: 'Node.js, the difference between development and production',
+        items: [
+          {
+            value: 'section-1',
+            label: 'Getting Started',
+          },
+          {
+            value: 'section-2',
+            label: 'How to install Node.js',
+          },
+          {
+            value: 'section-3',
+            label: 'How much JavaScript do you need to know to use Node.js?',
+          },
+          {
+            value: 'section-4',
+            label: 'Differences between Node.js and the Browser',
+          },
+          {
+            value: 'section-5',
+            label: 'The V8 JavaScript Engine',
+          },
+          {
+            value: 'section-6',
+            label: 'An introduction to the NPM package manager',
+          },
+          {
+            value: 'section-7',
+            label: 'ECMAScript 2015 (ES6) and beyond',
+          },
+          {
+            value: 'section-8',
+            label: 'Node.js, the difference between development and production',
+          },
+        ],
       },
     ],
-    label: 'Getting Started',
-    dropdownLabel: 'Getting Started',
     placeholder: 'Select a guide',
+    label: 'Getting Started',
   },
 };
 
@@ -66,22 +73,26 @@ export const InlineSelect: Story = {
   args: {
     values: [
       {
-        value: 'linux',
-        label: 'Linux',
-        iconImageUrl: '/static/images/logos/platform-linux.svg',
-      },
-      {
-        value: 'macos',
-        label: 'MacOS',
-        iconImageUrl: '/static/images/logos/platform-apple.svg',
-      },
-      {
-        value: 'windows',
-        label: 'Windows',
-        iconImageUrl: '/static/images/logos/platform-microsoft.svg',
+        label: 'Platform',
+        items: [
+          {
+            value: 'linux',
+            label: 'Linux',
+            iconImage: <Linux width={16} height={16} />,
+          },
+          {
+            value: 'macos',
+            label: 'MacOS',
+            iconImage: <Apple width={16} height={16} />,
+          },
+          {
+            value: 'windows',
+            label: 'Windows',
+            iconImage: <Microsoft width={16} height={16} />,
+          },
+        ],
       },
     ],
-    dropdownLabel: 'Platform',
     defaultValue: 'macos',
     inline: true,
   },

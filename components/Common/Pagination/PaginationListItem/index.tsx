@@ -1,7 +1,7 @@
+import { useTranslations } from 'next-intl';
 import type { FC } from 'react';
-import { useIntl } from 'react-intl';
 
-import LocalizedLink from '@/components/LocalizedLink';
+import Link from '@/components/Link';
 
 import styles from './index.module.css';
 
@@ -19,21 +19,18 @@ const PaginationListItem: FC<PaginationListItemProps> = ({
   currentPage,
   totalPages,
 }) => {
-  const intl = useIntl();
+  const t = useTranslations();
 
   return (
     <li key={pageNumber} aria-setsize={totalPages} aria-posinset={pageNumber}>
-      <LocalizedLink
+      <Link
         href={url}
-        aria-label={intl.formatMessage(
-          { id: 'components.common.pagination.pageLabel' },
-          { pageNumber }
-        )}
+        aria-label={t('components.common.pagination.pageLabel', { pageNumber })}
         className={styles.listItem}
         {...(pageNumber === currentPage && { 'aria-current': 'page' })}
       >
         <span>{pageNumber}</span>
-      </LocalizedLink>
+      </Link>
     </li>
   );
 };

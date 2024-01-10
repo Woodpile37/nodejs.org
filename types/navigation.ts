@@ -1,15 +1,19 @@
 export type NavigationKeys =
-  | 'home'
   | 'about'
   | 'download'
   | 'docs'
   | 'getInvolved'
-  | 'security'
   | 'certification'
+  | 'learn'
   | 'blog';
 
 export interface NavigationEntry {
-  translationId: string;
-  link: string;
+  label?: string;
+  link?: string;
   items?: Record<string, NavigationEntry>;
+}
+
+export interface SiteNavigation {
+  topNavigation: Record<NavigationKeys, NavigationEntry>;
+  sideNavigation: Record<NavigationKeys, NavigationEntry>;
 }

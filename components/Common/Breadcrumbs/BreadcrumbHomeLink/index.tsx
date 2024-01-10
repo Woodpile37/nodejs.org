@@ -1,6 +1,6 @@
 import HomeIcon from '@heroicons/react/24/outline/HomeIcon';
+import { useTranslations } from 'next-intl';
 import type { ComponentProps, FC } from 'react';
-import { useIntl } from 'react-intl';
 
 import BreadcrumbLink from '@/components/Common/Breadcrumbs/BreadcrumbLink';
 
@@ -16,14 +16,12 @@ const BreadcrumbHomeLink: FC<BreadcrumbHomeLinkProps> = ({
   href = '/',
   ...props
 }) => {
-  const { formatMessage } = useIntl();
+  const t = useTranslations();
 
-  const navigateToHome = formatMessage({
-    id: 'components.common.breadcrumbs.navigateToHome',
-  });
+  const navigateToHome = t('components.common.breadcrumbs.navigateToHome');
 
   return (
-    <BreadcrumbLink href={href} {...props}>
+    <BreadcrumbLink href={href} aria-label={navigateToHome} {...props}>
       <HomeIcon
         title={navigateToHome}
         aria-label={navigateToHome}
