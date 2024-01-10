@@ -1,7 +1,8 @@
 import type { Meta as MetaObj, StoryObj } from '@storybook/react';
 
 import Apple from '@/components/Icons/Platform/Apple';
-import Generic from '@/components/Icons/Platform/Generic';
+import GenericBlack from '@/components/Icons/Platform/GenericBlack';
+import GenericWhite from '@/components/Icons/Platform/GenericWhite';
 import Homebrew from '@/components/Icons/Platform/Homebrew';
 import Linux from '@/components/Icons/Platform/Linux';
 import Microsoft from '@/components/Icons/Platform/Microsoft';
@@ -18,7 +19,8 @@ export const PlatformLogos: StoryObj = {
       <div className="flex flex-col items-center gap-4">
         <Microsoft width={64} height={64} />
         <Homebrew width={64} height={64} />
-        <Generic width={64} height={64} />
+        <GenericBlack width={64} height={64} className="dark:hidden" />
+        <GenericWhite width={64} height={64} className="hidden dark:block" />
       </div>
     </div>
   ),

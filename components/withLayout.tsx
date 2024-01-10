@@ -1,5 +1,6 @@
 import type { FC, PropsWithChildren } from 'react';
 
+import WithNodeRelease from '@/components/withNodeRelease';
 import LegacyAboutLayout from '@/layouts/AboutLayout';
 import LegacyBlogCategoryLayout from '@/layouts/BlogCategoryLayout';
 import LegacyBlogPostLayout from '@/layouts/BlogPostLayout';
@@ -9,14 +10,12 @@ import LegacyDownloadLayout from '@/layouts/DownloadLayout';
 import LegacyIndexLayout from '@/layouts/IndexLayout';
 import LegacyLearnLayout from '@/layouts/LearnLayout';
 import AboutLayout from '@/layouts/New/About';
-import BlogLayout from '@/layouts/New/Blog';
 import DefaultLayout from '@/layouts/New/Default';
 import DocsLayout from '@/layouts/New/Docs';
-import HomeLayout from '@/layouts/New/Home';
+import DownloadLayout from '@/layouts/New/Download';
 import LearnLayout from '@/layouts/New/Learn';
-import PostLayout from '@/layouts/New/Post';
 import { ENABLE_WEBSITE_REDESIGN } from '@/next.constants.mjs';
-import type { Layouts, LegacyLayouts } from '@/types';
+import type { LegacyLayouts } from '@/types';
 
 /** @deprecated these should be removed with the website redesin */
 const legacyLayouts = {
@@ -24,38 +23,40 @@ const legacyLayouts = {
   'about.hbs': LegacyAboutLayout,
   'blog-category.hbs': LegacyBlogCategoryLayout,
   'blog-post.hbs': LegacyBlogPostLayout,
+  'contribute.hbs': LegacyAboutLayout,
   'download.hbs': LegacyDownloadLayout,
   'index.hbs': LegacyIndexLayout,
   'learn.hbs': LegacyLearnLayout,
   'page.hbs': LegacyDefaultLayout,
-} satisfies Record<LegacyLayouts, FC>;
+} satisfies Record<string, FC>;
 
 /** all the currently available layouts from website redesign */
 const redesignLayouts = {
-  'about.hbs': AboutLayout,
   'docs.hbs': DocsLayout,
-  'home.hbs': HomeLayout,
+  'about.hbs': AboutLayout,
+  'blog-category.hbs': DefaultLayout,
+  'blog-post.hbs': DefaultLayout,
+  'contribute.hbs': AboutLayout,
+  'download.hbs': () => (
+    // It's a way to pass server data to the client
+    <WithNodeRelease>
+      {({ release }) => <DownloadLayout release={release} />}
+    </WithNodeRelease>
+  ),
+  'index.hbs': DefaultLayout,
   'learn.hbs': LearnLayout,
   'page.hbs': DefaultLayout,
-  'blog-post.hbs': PostLayout,
-  'blog-category.hbs': BlogLayout,
-} satisfies Record<Layouts, FC>;
+} satisfies Record<string, FC>;
 
-type WithLayout<L = Layouts | LegacyLayouts> = PropsWithChildren<{ layout: L }>;
+/** @deprecated this should be removed once we sunset the legacy layouts */
+const availableLayouts = ENABLE_WEBSITE_REDESIGN
+  ? redesignLayouts
+  : legacyLayouts;
 
-const WithRedesign: FC<WithLayout<Layouts>> = ({ layout, children }) => {
-  const LayoutComponent = redesignLayouts[layout] ?? DefaultLayout;
+type WithLayoutProps = PropsWithChildren<{ layout: LegacyLayouts }>;
 
-  return <LayoutComponent>{children}</LayoutComponent>;
-};
-
-/** @deprecated method to be removed once website redesign is finished */
-const WithLegacy: FC<WithLayout<LegacyLayouts>> = ({ layout, children }) => {
-  const LayoutComponent = legacyLayouts[layout] ?? LegacyDefaultLayout;
+export const WithLayout: FC<WithLayoutProps> = ({ layout, children }) => {
+  const LayoutComponent = availableLayouts[layout];
 
   return <LayoutComponent>{children}</LayoutComponent>;
 };
-
-// Decides which Layout Connector to use based on the Environment
-// @todo: This should be removed once we switch to Redesign
-export default ENABLE_WEBSITE_REDESIGN ? WithRedesign : WithLegacy;

@@ -4,7 +4,7 @@ import getReleaseData from '@/next-data/releaseData';
 import type { NodeRelease, NodeReleaseStatus } from '@/types';
 
 type WithNodeReleaseProps = {
-  status: Array<NodeReleaseStatus> | NodeReleaseStatus;
+  status?: NodeReleaseStatus[] | NodeReleaseStatus;
   children: FC<{ release: NodeRelease }>;
 };
 
@@ -16,6 +16,8 @@ const WithNodeRelease: FC<WithNodeReleaseProps> = async ({
   children: Component,
 }) => {
   const releaseData = await getReleaseData();
+
+  if (!status) return <Component release={releaseData} />;
 
   const matchingRelease = releaseData.find(release =>
     [status].flat().includes(release.status)
