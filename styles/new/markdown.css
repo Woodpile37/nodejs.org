@@ -1,4 +1,9 @@
 main {
+  @apply flex
+    w-full
+    flex-col
+    gap-6;
+
   hr {
     @apply w-full
       border-t
@@ -50,6 +55,11 @@ main {
       font-semibold
       text-neutral-900
       dark:bg-neutral-900
+      dark:text-white;
+  }
+
+  p {
+    @apply text-neutral-900
       dark:text-white;
   }
 
